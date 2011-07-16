@@ -73,7 +73,7 @@ static void devtree_prepare(void)
 		if (res < 0)
 			fatal("couldn't add reservation for the initrd");
 	}
-	
+
 	node = fdt_path_offset(__devtree, "/memory");
 	if (node < 0)
 		fatal("/memory node not found in devtree");
@@ -95,19 +95,6 @@ static void devtree_prepare(void)
 		fatal("fdt_pack() failed");
 
 	printf("Device tree prepared\n");
-}
-
-static void vecmemclr(u64 dest, u64 size)
-{
-	u64 end = dest+size;
-	if (size && dest < VECSIZE) {
-		if (end <= VECSIZE)
-			return;
-		dest = VECSIZE;
-		size = end - dest;
-	}
-	memset((void*)dest, 0, size);
-	sync_before_exec((void*)dest, size);
 }
 
 static void vecmemcpy(u64 dest, const void *src, u64 size)
@@ -162,9 +149,9 @@ int kernel_load(const u8 *addr, u32 len)
 		if (phdr->p_type != PT_LOAD) {
 			printf("load_elf_kernel: skipping PHDR of type %d\n", phdr->p_type);
 		} else {
-			if ((phdr->p_paddr+phdr->p_memsz) > ADDR_LIMIT) {
+			if ((phdr->p_paddr+phdr->p_filesz) > ADDR_LIMIT) {
 				printf("PHDR out of bounds [0x%lx...0x%lx] 0x%lx\n",
-					   phdr->p_paddr, phdr->p_paddr + phdr->p_memsz,
+					   phdr->p_paddr, phdr->p_paddr + phdr->p_filesz,
 					   ADDR_LIMIT);
 				return -1;
 			}
@@ -172,7 +159,6 @@ int kernel_load(const u8 *addr, u32 len)
 			printf("load_elf_kernel: LOAD 0x%lx @0x%lx [0x%lx/0x%lx]\n", phdr->p_offset,
 				   phdr->p_paddr, phdr->p_filesz, phdr->p_memsz);
 
-			vecmemclr(phdr->p_paddr, phdr->p_memsz);
 			vecmemcpy(phdr->p_paddr, &addr[phdr->p_offset],
 					phdr->p_filesz);
 		}

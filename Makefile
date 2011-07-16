@@ -6,12 +6,12 @@
 # see file COPYING or http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt
 
 all:
-	make -C stage1
-	make -C stage2
-	make -C tools
+	$(MAKE) -C stage1
+	$(MAKE) -C stage2
+	$(MAKE) -C tools
 
 clean:
-	make -C stage1 clean
-	make -C stage2 clean
-	make -C tools clean
+	$(MAKE) -C stage1 clean
+	$(MAKE) -C stage2 clean
+	$(MAKE) -C tools clean
 

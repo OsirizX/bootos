@@ -10,10 +10,10 @@ OUTPUT_FORMAT("elf64-powerpc")
 OUTPUT_ARCH(powerpc:common64)
 
 /* stage2 runs in realmode */
-__base = 0xc00000;
+__base = 0x1c00000;
 
 /* address of the devicetree buffer */
-__devtree = 0xff0000;
+__devtree = 0x1ff0000;
 
 ENTRY(_entry)
 

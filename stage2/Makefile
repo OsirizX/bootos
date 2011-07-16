@@ -69,7 +69,7 @@ stage2_native.elf: $(OBJS_NATIVE) stage2_native.ld
 	@$(PREFIX)gcc $(LDFLAGS) -Wl,-T,stage2_native.ld -o tmp_$@ $(OBJS_NATIVE)
 	@# move everything down to zero, it will relocate itself on startup
 	@# this could be done in the linker script for lma, but Sony fails and needs it for vma.
-	@$(PREFIX)objcopy --adjust-vma -0xc00000 tmp_$@ $@
+	@$(PREFIX)objcopy --adjust-vma -0x1c00000 tmp_$@ $@
 	@rm -f tmp_$@
 
 stage2_raw.elf: $(OBJS) stage2.ld

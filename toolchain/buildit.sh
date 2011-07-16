@@ -46,7 +46,7 @@ case `uname -s` in
 		MAKE=make
 esac
 
-export PATH=$PS3DEV/bin:$PATH
+export PATH=$PS3LINUXDEV/bin:$PATH
 
 die() {
 	echo $@
@@ -54,44 +54,44 @@ die() {
 }
 
 cleansrc() {
-	[ -e $PS3DEV/$BINUTILS_DIR ] && rm -rf $PS3DEV/$BINUTILS_DIR
-	[ -e $PS3DEV/$GCC_DIR ] && rm -rf $PS3DEV/$GCC_DIR
+	[ -e $PS3LINUXDEV/$BINUTILS_DIR ] && rm -rf $PS3LINUXDEV/$BINUTILS_DIR
+	[ -e $PS3LINUXDEV/$GCC_DIR ] && rm -rf $PS3LINUXDEV/$GCC_DIR
 }
 
 cleanbuild() {
-	[ -e $PS3DEV/build_binutils ] && rm -rf $PS3DEV/build_binutils
-	[ -e $PS3DEV/build_gcc ] && rm -rf $PS3DEV/build_gcc
+	[ -e $PS3LINUXDEV/build_binutils ] && rm -rf $PS3LINUXDEV/build_binutils
+	[ -e $PS3LINUXDEV/build_gcc ] && rm -rf $PS3LINUXDEV/build_gcc
 }
 
 download() {
 	DL=1
-	if [ -f "$PS3DEV/$2" ]; then
+	if [ -f "$PS3LINUXDEV/$2" ]; then
 		echo "Testing $2..."
-		tar tjf "$PS3DEV/$2" >/dev/null 2>&1 && DL=0
+		tar tjf "$PS3LINUXDEV/$2" >/dev/null 2>&1 && DL=0
 	fi
 
 	if [ $DL -eq 1 ]; then
 		echo "Downloading $2..."
-		wget "$1" -c -O "$PS3DEV/$2" || die "Could not download $2"
+		wget "$1" -c -O "$PS3LINUXDEV/$2" || die "Could not download $2"
 	fi
 }
 
 extract() {
 	echo "Extracting $1..."
-	tar xjf "$PS3DEV/$1" -C "$2" || die "Error unpacking $1"
+	tar xjf "$PS3LINUXDEV/$1" -C "$2" || die "Error unpacking $1"
 }
 
 makedirs() {
-	mkdir -p $PS3DEV/build_binutils || die "Error making binutils build directory $PS3DEV/build_binutils"
-	mkdir -p $PS3DEV/build_gcc || die "Error making gcc build directory $PS3DEV/build_gcc"
+	mkdir -p $PS3LINUXDEV/build_binutils || die "Error making binutils build directory $PS3LINUXDEV/build_binutils"
+	mkdir -p $PS3LINUXDEV/build_gcc || die "Error making gcc build directory $PS3LINUXDEV/build_gcc"
 }
 
 buildbinutils() {
 	TARGET=$1
 	(
-		cd $PS3DEV/build_binutils && \
-		$PS3DEV/$BINUTILS_DIR/configure --target=$TARGET \
-			--prefix=$PS3DEV --disable-werror --enable-64-bit-bfd && \
+		cd $PS3LINUXDEV/build_binutils && \
+		$PS3LINUXDEV/$BINUTILS_DIR/configure --target=$TARGET \
+			--prefix=$PS3LINUXDEV --disable-werror --enable-64-bit-bfd && \
 		nice $MAKE $MAKEOPTS && \
 		$MAKE install
 	) || die "Error building binutils for target $TARGET"
@@ -100,9 +100,9 @@ buildbinutils() {
 buildgcc() {
 	TARGET=$1
 	(
-		cd $PS3DEV/build_gcc && \
-		$PS3DEV/$GCC_DIR/configure --target=$TARGET --enable-targets=all \
-			--prefix=$PS3DEV \
+		cd $PS3LINUXDEV/build_gcc && \
+		$PS3LINUXDEV/$GCC_DIR/configure --target=$TARGET --enable-targets=all \
+			--prefix=$PS3LINUXDEV \
 			--enable-languages=c --without-headers \
 			--disable-nls --disable-threads --disable-shared \
 			--disable-libmudflap --disable-libssp --disable-libgomp \
@@ -133,8 +133,8 @@ buildppu() {
 	echo "******* PowerPC toolchain built and installed"
 }
 
-if [ -z "$PS3DEV" ]; then
-	die "Please set PS3DEV in your environment."
+if [ -z "$PS3LINUXDEV" ]; then
+	die "Please set PS3LINUXDEV in your environment."
 fi
 
 case $BUILDTYPE in
@@ -160,18 +160,18 @@ download "$GCC_CORE_URI" "$GCC_CORE_TARBALL"
 
 cleansrc
 
-extract "$BINUTILS_TARBALL" "$PS3DEV"
-extract "$GCC_CORE_TARBALL" "$PS3DEV"
-extract "$GMP_TARBALL" "$PS3DEV/$GCC_DIR"
-extract "$MPFR_TARBALL" "$PS3DEV/$GCC_DIR"
+extract "$BINUTILS_TARBALL" "$PS3LINUXDEV"
+extract "$GCC_CORE_TARBALL" "$PS3LINUXDEV"
+extract "$GMP_TARBALL" "$PS3LINUXDEV/$GCC_DIR"
+extract "$MPFR_TARBALL" "$PS3LINUXDEV/$GCC_DIR"
 
 # in-tree gmp and mpfr
-mv "$PS3DEV/$GCC_DIR/$GMP_DIR" "$PS3DEV/$GCC_DIR/gmp" || die "Error renaming $GMP_DIR -> gmp"
-mv "$PS3DEV/$GCC_DIR/$MPFR_DIR" "$PS3DEV/$GCC_DIR/mpfr" || die "Error renaming $MPFR_DIR -> mpfr"
+mv "$PS3LINUXDEV/$GCC_DIR/$GMP_DIR" "$PS3LINUXDEV/$GCC_DIR/gmp" || die "Error renaming $GMP_DIR -> gmp"
+mv "$PS3LINUXDEV/$GCC_DIR/$MPFR_DIR" "$PS3LINUXDEV/$GCC_DIR/mpfr" || die "Error renaming $MPFR_DIR -> mpfr"
 
 # http://gcc.gnu.org/bugzilla/show_bug.cgi?id=42424
 # http://gcc.gnu.org/bugzilla/show_bug.cgi?id=44455
-patch -d $PS3DEV/$GCC_DIR -u -i $SCRIPTDIR/gcc.patch || die "Error applying gcc patch"
+patch -d $PS3LINUXDEV/$GCC_DIR -u -i $SCRIPTDIR/gcc.patch || die "Error applying gcc patch"
 
 case $BUILDTYPE in
 	spu)		buildspu ;;

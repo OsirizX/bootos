@@ -7,8 +7,8 @@
 
 include ../common/ppu.mak
 
-DTC=$(PS3DEV)/bin/dtc
-LZMA=lzma
+DTC = $(PS3LINUXDEV)/bin/dtc
+LZMA = lzma
 
 STUB_LDFLAGS := $(LDFLAGS) -Wl,--gc-sections -Wl,-T,uncompress/stub.ld
 LDFLAGS += -Wl,--gc-sections

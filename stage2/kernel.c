@@ -163,8 +163,9 @@ int kernel_load(const u8 *addr, u32 len)
 			printf("load_elf_kernel: skipping PHDR of type %d\n", phdr->p_type);
 		} else {
 			if ((phdr->p_paddr+phdr->p_memsz) > ADDR_LIMIT) {
-				printf("PHDR out of bounds [0x%lx...0x%lx]\n",
-					   phdr->p_paddr, phdr->p_paddr + phdr->p_memsz);
+				printf("PHDR out of bounds [0x%lx...0x%lx] 0x%lx\n",
+					   phdr->p_paddr, phdr->p_paddr + phdr->p_memsz,
+					   ADDR_LIMIT);
 				return -1;
 			}
 

@@ -169,6 +169,7 @@ download "$GCC_CORE_URI" "$GCC_CORE_TARBALL"
 cleansrc
 
 extract "$BINUTILS_TARBALL" "$PS3LINUXDEV"
+patch -d $PS3LINUXDEV/$BINUTILS_DIR -u -p1 -i $SCRIPTDIR/binutils-2.21.1.patch || die "Error applying binutils patch"
 extract "$GCC_CORE_TARBALL" "$PS3LINUXDEV"
 extract "$GMP_TARBALL" "$PS3LINUXDEV/$GCC_DIR"
 extract "$MPFR_TARBALL" "$PS3LINUXDEV/$GCC_DIR"

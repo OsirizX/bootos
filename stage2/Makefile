@@ -42,7 +42,7 @@ OBJS_NATIVE = start_native.o $(CORE_OBJS)
 
 STUB_OBJS = uncompress/stub_start.o uncompress/unlzma.o
 
-all: stage2.bin stage2_native.bin
+all: stage2.bin stage2_native.bin stage2_native.self
 
 .PRECIOUS: stage2_raw.bin
 
@@ -75,6 +75,9 @@ stage2_native.elf: $(OBJS_NATIVE) stage2_native.ld
 stage2_raw.elf: $(OBJS) stage2.ld
 	@echo "  LINK      $@"
 	@$(PREFIX)gcc $(LDFLAGS) -Wl,-T,stage2.ld -o $@ $(OBJS)
+
+stage2_native.self: stage2_native.elf
+	@self_rebuilder $< $@ $(HOME)/devel/ps3/fw/coreos-355/lv2_kernel.self
 
 %.S: %.dts
 	@echo "  DTC       $<"

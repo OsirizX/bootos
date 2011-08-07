@@ -19,6 +19,7 @@ int mm_loadseg(u64 addr);
 int mm_loadhtab(u64 addr);
 
 void mm_init(void);
+void mm_set_highmem_repo_info(void);
 void mm_shutdown_highmem(void);
 void mm_shutdown(void);
 

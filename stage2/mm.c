@@ -212,7 +212,7 @@ void mm_init(void)
 		fatal("could not get LPAR ID");
 
 	u64 rm_size, rgntotal, v2;
-	
+
 	result = lv1_read_repository_node(lpar_id, FIELD_FIRST("bi",0),
 					FIELD("pu",0), ppe_id, FIELD("rm_size",0),
 					&rm_size, &v2);
@@ -251,6 +251,46 @@ void mm_init(void)
 	highmem_ptr = mm_highmem_addr;
 
 	printf("Highmem = %ld bytes (%ldMB) at 0x%lx\n", mm_highmem_size, mm_highmem_size>>20, mm_highmem_addr);
+}
+
+void mm_set_highmem_repo_info(void)
+{
+	s32 result;
+	u64 lpar_id;
+
+	result = lv1_get_logical_partition_id(&lpar_id);
+	if (result)
+		fatal("could not get LPAR ID");
+
+	result = set_repository_node(FIELD_FIRST("highmem", 0),
+									FIELD("region", 0),
+									FIELD("base", 0),
+									0,
+									mm_highmem_addr, 0);
+
+	if (result)
+		fatal("error setting rep node for highmem base");
+
+	result = set_repository_node(FIELD_FIRST("highmem", 0),
+										FIELD("region", 0),
+										FIELD("size", 0),
+										0,
+										mm_highmem_size, 0);
+
+	if (result)
+		fatal("error setting rep node for highmem size");
+
+	result = set_repository_node(FIELD_FIRST("highmem", 0),
+										FIELD("region", 0),
+										FIELD("count", 0),
+										0,
+										1, 0);
+
+	if (result)
+		fatal("error setting rep node for highmem region count");
+
+	printf("Repository highmem values set to 0x%lx, 0x%lx\n",
+			mm_highmem_addr, mm_highmem_size);
 }
 
 void mm_shutdown_highmem(void)

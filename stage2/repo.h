@@ -28,4 +28,17 @@ see file COPYING or http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt
 #define FIELD_FIRST(s, i) ((S2I(s)>>32) + (i))
 #define FIELD(s, i) (S2I(s) + (i))
 
+static inline s32 set_repository_node(u64 n1, u64 n2, u64 n3, u64 n4,
+										u64 v1, u64 v2)
+{
+	s32 result;
+
+	result = lv1_create_repository_node(n1, n2, n3, n4, v1, v2);
+
+	if (result)
+		return result;
+
+	return lv1_write_repository_node(n1, n2, n3, n4, v1, v2);
+}
+
 #endif

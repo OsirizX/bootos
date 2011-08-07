@@ -197,7 +197,12 @@ void kernel_set_initrd(void *start, size_t size)
 void kernel_launch(void)
 {
 	devtree_prepare();
-	mm_set_highmem_repo_info();
+
+	if (initrd_start && initrd_size)
+		mm_set_highmem_repo_info();
+	else
+		mm_shutdown_highmem();
+
 	printf("Relocating vectors...\n");
 	memcpy((void*)0, vec_buf, VECSIZE);
 	sync_before_exec((void*)0, VECSIZE);

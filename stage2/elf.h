@@ -41,6 +41,34 @@ typedef struct {
 	u64 p_align;
 } Elf64_Phdr;
 
+typedef struct {
+	unsigned char   e_ident[EI_NIDENT];
+	u16 e_type;
+	u16 e_machine;
+	u32 e_version;
+	u32 e_entry;
+	u32 e_phoff;
+	u32 e_shoff;
+	u32 e_flags;
+	u16 e_ehsize;
+	u16 e_phentsize;
+	u16 e_phnum;
+	u16 e_shentsize;
+	u16 e_shnum;
+	u16 e_shtrndx;
+} Elf32_Ehdr __attribute__((aligned(4)));
+
+typedef struct {
+	u32 p_type;
+	u32 p_offset;
+	u32 p_vaddr;
+	u32 p_paddr;
+	u32 p_filesz;
+	u32 p_memsz;
+	u32 p_flags;
+	u32 p_align;
+} Elf32_Phdr __attribute__((aligned(4)));
+
 #define PT_NULL     0
 #define PT_LOAD     1
 #define PT_DYNAMIC  2

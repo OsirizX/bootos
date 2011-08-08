@@ -111,21 +111,12 @@ static void vecmemcpy(u64 dest, const void *src, u64 size)
 	sync_before_exec((void*)dest, size);
 }
 
-int kernel_load(const u8 *addr, u32 len)
+int kernel_load_elf64(const u8 *addr, u32 len)
 {
-	memset(vec_buf, 0, sizeof(vec_buf));
-
 	if (len < sizeof(Elf64_Ehdr))
 		return -1;
 
 	Elf64_Ehdr *ehdr = (Elf64_Ehdr *) addr;
-
-	if (memcmp("\x7F" "ELF\x02\x02\x01", ehdr->e_ident, 7)) {
-		printf("load_elf_kernel: invalid ELF header 0x%02x 0x%02x 0x%02x 0x%02x\n",
-						ehdr->e_ident[0], ehdr->e_ident[1],
-						ehdr->e_ident[2], ehdr->e_ident[3]);
-		return -1;
-	}
 
 	if (ehdr->e_phoff == 0 || ehdr->e_phnum == 0) {
 		printf("load_elf_kernel: ELF has no program headers\n");
@@ -167,6 +158,86 @@ int kernel_load(const u8 *addr, u32 len)
 	printf("load_elf_kernel: kernel loaded, entry at 0x%lx\n", ehdr->e_entry);
 
 	return 0;
+}
+
+int kernel_load_elf32(const u8 *addr, u32 len)
+{
+	if (len < sizeof(Elf32_Ehdr)) {
+		printf("file smaller than Elf32_Ehdr\n");
+		return -1;
+	}
+
+	Elf32_Ehdr *ehdr = (Elf32_Ehdr *) addr;
+
+	if (ehdr->e_ehsize != sizeof(Elf32_Ehdr)) {
+		printf("sizeof Elf32_Ehdr mismatch\n");
+		return -1;
+	}
+
+	if (ehdr->e_phoff == 0 || ehdr->e_phnum == 0) {
+		printf("load_elf_kernel: ELF has no program headers\n");
+		return -1;
+	}
+
+	int count = ehdr->e_phnum;
+	if (len < ehdr->e_phoff + count * sizeof(Elf32_Phdr)) {
+		printf("load_elf_kernel: image too short for phdrs\n");
+		return -1;
+	}
+
+	Elf32_Phdr *phdr = (Elf32_Phdr *) &addr[ehdr->e_phoff];
+
+	while (count--) {
+		if (phdr->p_type != PT_LOAD) {
+			printf("load_elf_kernel: skipping PHDR of type %d\n", phdr->p_type);
+		} else {
+			if ((phdr->p_paddr+phdr->p_filesz) > ADDR_LIMIT) {
+				printf("PHDR out of bounds [0x%x...0x%x] 0x%lx\n",
+					   phdr->p_paddr, phdr->p_paddr + phdr->p_filesz,
+					   ADDR_LIMIT);
+				return -1;
+			}
+
+			printf("load_elf_kernel: LOAD 0x%x @0x%x [0x%x/0x%x]\n", phdr->p_offset,
+				   phdr->p_paddr, phdr->p_filesz, phdr->p_memsz);
+
+			vecmemcpy(phdr->p_paddr, &addr[phdr->p_offset],
+					phdr->p_filesz);
+		}
+		phdr++;
+	}
+
+	ehdr->e_entry &= 0x3ffffffffffffffful;
+
+	entry[0] = (void*)(u64)ehdr->e_entry;
+
+	printf("load_elf_kernel: kernel loaded, entry at 0x%x\n", ehdr->e_entry);
+
+	return 0;
+}
+
+int kernel_load(const u8 *addr, u32 len)
+{
+	memset(vec_buf, 0, sizeof(vec_buf));
+
+	if (len < EI_NIDENT) {
+		printf("kernel too short\n");
+		return -1;
+	}
+
+	if (!memcmp("\x7F" "ELF\x02\x02\x01", addr, 7)) {
+		printf("ELF64 kernel detected\n");
+		return kernel_load_elf64(addr, len);
+	}
+
+	if (!memcmp("\x7F" "ELF\x01\x02\x01", addr, 7)) {
+		printf("ELF32 kernel detected\n");
+		return kernel_load_elf32(addr, len);
+	}
+
+	printf("invalid ELF header %02x %02x %02x %02x %02x %02x %02x\n",
+			addr[0], addr[1], addr[2], addr[3], addr[4], addr[5], addr[6]);
+	return -1;
 }
 
 void kernel_build_cmdline(const char *parameters, const char *root)

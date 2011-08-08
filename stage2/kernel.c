@@ -278,7 +278,7 @@ void kernel_launch(void)
 	memcpy((void*)0, vec_buf, VECSIZE);
 	sync_before_exec((void*)0, VECSIZE);
 	printf("Letting thread1 run loose...\n");
-	_thread1_vector = 0x60; /* this is __secondary_hold in Linux */
+	_thread1_vector = (u64)entry[0] + 0x60; /* this is __secondary_hold */
 	_thread1_release = 1;
 	printf("Taking the plunge...\n");
 	debug_shutdown();

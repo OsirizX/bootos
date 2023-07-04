@@ -41,7 +41,7 @@ static void *kernel_buf;
 static u64 kernel_sz;
 static void *initrd_buf;
 
-extern u8 __vmlinux[], __vmlinux_end[1];
+//extern u8 __vmlinux[], __vmlinux_end[1];
 
 #ifdef USE_NETWORK
 enum state_t {
@@ -90,6 +90,7 @@ int sequence(void)
 		gstate = STATE_WAIT_NET;
 		break;
 	case STATE_WAIT_NET:
+#if 0
 		if (!(tick & 0xFFFF))
 		{
 			tick = 0;
@@ -102,6 +103,7 @@ int sequence(void)
 			printf("Timed out...\n");
 			return 1;
 		}
+#endif
 
 		if (eth.dhcp->state == DHCP_BOUND) {
 			gstate = STATE_GOT_NET;
@@ -322,6 +324,7 @@ int main(void)
 	kernel_launch();
 
 #endif
+#if 0
 	printf("Loading embedded kernel...\n");
 	kernel_buf = mm_highmem_freestart();
 	printf("Decompressing kernel to %lX...\n", (u64) kernel_buf);
@@ -339,6 +342,7 @@ int main(void)
 	}
 	kernel_build_cmdline("video=ps3fb:mode:0 panic=5", "/dev/sda1");
 	shutdown_and_launch();
+#endif
 
 	printf("End of main() reached! Rebooting...\n");
 	lv1_panic(1);

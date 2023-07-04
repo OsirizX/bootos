@@ -38,8 +38,8 @@ CORE_OBJS = main.o debug.o hvcall.o string.o printf.o device.o malloc.o \
 	inflate.o crc32.o adler32.o inftrees.o zutil.o inffast.o zpipe.o \
 	$(LWIP_OBJS) $(FDT_OBJS)
 
-OBJS = start.o $(CORE_OBJS) vmlinux.o
-OBJS_NATIVE = start_native.o $(CORE_OBJS) vmlinux.o
+OBJS = start.o $(CORE_OBJS) #vmlinux.o
+OBJS_NATIVE = start_native.o $(CORE_OBJS) #vmlinux.o
 
 STUB_OBJS = uncompress/stub_start.o uncompress/unlzma.o
 
@@ -47,9 +47,9 @@ all: stage2.bin stage2_native.bin lv2_kernel.self
 
 .PRECIOUS: stage2_raw.bin
 
-vmlinux.o: vmlinux.dat vmlinux.S
+#vmlinux.o: vmlinux.dat vmlinux.S
 
-vmlinux.bin:
+#vmlinux.bin:
 
 stage2.bin : uncompress/stub.bin stage2_raw.lzma
 	cat uncompress/stub.bin stage2_raw.lzma > $@
@@ -59,7 +59,7 @@ elf.o: elf.S stage2_native.bin
 	$(PREFIX)strip -R .symtab -R .strtab elf.o
 
 lv2_kernel.self: elf.o
-	makeself lv2 355 3.55.0 05000002 1050000003000001 retail elf.o lv2_kernel.self
+	scetool -p /COBRA-7.3/484/REX/stage0_file/data --template /COBRA-7.3/484/REX/lv2gen/lv2Dkernel.self --sce-type SELF --self-type LV2 --encrypt elf.o lv2_kernel.self
 
 %.lzma: %.bin
 	@echo "  LZMA      $@"

@@ -5,8 +5,9 @@
 # This code is licensed to you under the terms of the GNU GPL, version 2;
 # see file COPYING or http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt
 
-PREFIX = $(PS3LINUXDEV)/bin/powerpc64-linux-
+PREFIX = powerpc64-ps3-elf-
+SUFFIX = -4.2.0
 
-CFLAGS = -ffreestanding -mbig-endian -mcpu=cell -m64
+CFLAGS = -ffreestanding -mbig-endian -m64
 LDFLAGS = -nostartfiles -nostdlib -mbig-endian
 

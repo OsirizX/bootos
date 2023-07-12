@@ -62,11 +62,11 @@ stage2.bin : uncompress/stub.bin stage2_raw.lzma
 
 uncompress/stub.elf: $(STUB_OBJS) uncompress/stub.ld
 	@echo "  LINK      $@"
-	@$(PREFIX)gcc $(STUB_LDFLAGS) -o $@ $(STUB_OBJS)
+	@$(PREFIX)gcc$(SUFFIX) $(STUB_LDFLAGS) -o $@ $(STUB_OBJS)
 
 stage2_native.elf: $(OBJS_NATIVE) stage2_native.ld
 	@echo "  LINK      $@"
-	@$(PREFIX)gcc $(LDFLAGS) -Wl,-T,stage2_native.ld -o tmp_$@ $(OBJS_NATIVE)
+	@$(PREFIX)gcc$(SUFFIX) $(LDFLAGS) -Wl,-T,stage2_native.ld -o tmp_$@ $(OBJS_NATIVE)
 	@# move everything down to zero, it will relocate itself on startup
 	@# this could be done in the linker script for lma, but Sony fails and needs it for vma.
 	@$(PREFIX)objcopy --adjust-vma -0x1c00000 tmp_$@ $@
@@ -74,10 +74,10 @@ stage2_native.elf: $(OBJS_NATIVE) stage2_native.ld
 
 stage2_raw.elf: $(OBJS) stage2.ld
 	@echo "  LINK      $@"
-	@$(PREFIX)gcc $(LDFLAGS) -Wl,-T,stage2.ld -o $@ $(OBJS)
+	@$(PREFIX)gcc$(SUFFIX) $(LDFLAGS) -Wl,-T,stage2.ld -o $@ $(OBJS)
 
 stage2_native.self: stage2_native.elf
-	@self_rebuilder $< $@ $(HOME)/devel/ps3/fw/coreos-355/lv2_kernel.self
+	scetool -p /COBRA-7.3/484/REX/stage0_file/data --template /COBRA-7.3/484/REX/lv2gen/lv2Dkernel.self --sce-type SELF --self-type LV2 --encrypt stage2_native.elf lv2_kernel.self
 
 %.S: %.dts
 	@echo "  DTC       $<"
@@ -86,17 +86,18 @@ stage2_native.self: stage2_native.elf
 %.o: %.S
 	@echo "  ASSEMBLE  $<"
 	@mkdir -p $(DEPDIR)
-	@$(PREFIX)gcc $(ASFLAGS) -Wp,-MMD,$(DEPDIR)/$(*F).d,-MQ,"$@",-MP -c -o $@ $<
+	@$(PREFIX)gcc$(SUFFIX) $(ASFLAGS) -Wp,-MMD,$(DEPDIR)/$(*F).d,-MQ,"$@",-MP -c -o $@ $<
 
 %.o: %.c
 	@echo "  COMPILE   $<"
 	@mkdir -p $(DEPDIR)
-	@$(PREFIX)gcc $(CFLAGS) -Wp,-MMD,$(DEPDIR)/$(*F).d,-MQ,"$@",-MP -c -o $@ $<
+	@$(PREFIX)gcc$(SUFFIX) $(CFLAGS) -Wp,-MMD,$(DEPDIR)/$(*F).d,-MQ,"$@",-MP -c -o $@ $<
 
 clean:
 	rm -rf $(DEPDIR)
 	rm -f $(OBJS) *.elf *.bin *.lzma
 	rm -f $(STUB_OBJS)
+	rm -rf *.o uncompress/*.bin uncompress/*.elf *.self
 
 -include $(DEPDIR)/*
 
